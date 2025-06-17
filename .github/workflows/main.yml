@@ -10,7 +10,7 @@ jobs:
     steps:
     - name: 1. Setup User and Password
       run: |
-        net user RDP-User "PassWord@123#2025" /add
+        echo Y | net user RDP-User "PassWord@123#2025" /add
         net localgroup "Remote Desktop Users" RDP-User /add
         
     - name: 2. Enable RDP Connection
@@ -30,3 +30,4 @@ jobs:
         Write-Host "RDP is ready. You can now connect."
         Write-Host "This session will remain active for approximately 5 hours and 50 minutes."
         Start-Sleep -Seconds 21000
+   
