@@ -1,0 +1,32 @@
+name: Windows RDP Workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: 1. Setup User and Password
+      run: |
+        net user RDP-User "PassWord@123#2025" /add
+        net localgroup "Remote Desktop Users" RDP-User /add
+        
+    - name: 2. Enable RDP Connection
+      run: |
+        reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
+        netsh advfirewall firewall set rule group="remote desktop" new enable=Yes
+        
+    - name: 3. Download and Run ngrok
+      run: |
+        Invoke-WebRequest -Uri https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
+        Expand-Archive ngrok.zip
+        .\ngrok\ngrok.exe authtoken "${{ secrets.NGROK_AUTH_TOKEN }}"
+        Start-Process -FilePath ".\ngrok\ngrok.exe" -ArgumentList "tcp 3389 --log stdout" -NoNewWindow
+        
+    - name: 4. Keep Connection Alive
+      run: |
+        Write-Host "RDP is ready. You can now connect."
+        Write-Host "This session will remain active for approximately 5 hours and 50 minutes."
+        Start-Sleep -Seconds 21000
